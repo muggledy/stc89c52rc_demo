@@ -3,6 +3,7 @@
 
 /*
  * STC89C52RC 40I-PDIP40
+ * by muggledy
  */
 
 
