@@ -98,13 +98,13 @@ void get_system_up_time(time_t *t)
 
 void show_sys_up_time_with_lcd()
 {
-#if 0
-    LCD_Init();
+	LCD_Init();
     LCD_ShowNum(1, 1, sys_timer0_seconds, 5);
-#endif
+#if 0
     time_t t;
     get_system_up_time(&t);
     LCD_ShowNum(1, 1, t.seconds, 5);
+#endif
 }
 
 /* Scheduled tasks are on the second level, if current due tasks can't be processed in one second, 

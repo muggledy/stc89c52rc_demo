@@ -9,7 +9,10 @@
 extern void delay_1ms(unsigned int repeat);
 extern void delay_1000ms(unsigned int repeat);
 
-#define TIMER0_INTERVAL 100000 //us
+#define TIMER0_INTERVAL 50000 //unit: us, valid range(@11.0592MHz): [2, 71112] 
+//which makes "0xFFFF - (unsigned int)((double)TIMER0_INTERVAL / MICRO_SEC_TIME_PER_COUNT) + 1" be in range of [65535, 0]
+//[65535, 0] is timer counter(TH0:TL0)'s valid range, the left boundary value means minimum time interruption, the right means maximum
+//note: considering the weak performance of the MCU, TIMER0_INTERVAL should not be too small
 #define MICRO_SEC_TIME_PER_COUNT 1.0850694444444442 //@11.0592MHz
 
 #define CALC_ACC_MICRO_SEC_TIME //for get_system_up_time()
