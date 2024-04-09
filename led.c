@@ -4,7 +4,7 @@
  * Led
  */
 
-const unsigned char leds[8] = {D1, D2, D3, D4, D5, D6, D7, D8};
+const uint8_t leds[8] = {D1, D2, D3, D4, D5, D6, D7, D8};
 
 /*
  * Nixie tube
@@ -23,13 +23,13 @@ const unsigned char leds[8] = {D1, D2, D3, D4, D5, D6, D7, D8};
 
 #define N_WITH_DOT(NX) (NX | 0x80)
 
-const unsigned char digits[10] = {N0, N1, N2, N3, N4, N5, N6, N7, N8, N9};
-const unsigned char digits_with_dot[10] = 
+const uint8_t digits[10] = {N0, N1, N2, N3, N4, N5, N6, N7, N8, N9};
+const uint8_t digits_with_dot[10] = 
     {N_WITH_DOT(N0), N_WITH_DOT(N1), N_WITH_DOT(N2), N_WITH_DOT(N3), 
     N_WITH_DOT(N4), N_WITH_DOT(N5), 
     N_WITH_DOT(N6), N_WITH_DOT(N7), N_WITH_DOT(N8), N_WITH_DOT(N9)};
 
-void show_digit(unsigned int nixie_idx, unsigned int digit, int show_dot)
+void show_digit(uint8_t nixie_idx, uint8_t digit, uint8_t show_dot)
 {   
     P0 = 0;
     P2 = 0xFF; //slake all leds

@@ -2,6 +2,7 @@
 #define __LED_H__
 
 #include <REGX52.H>
+#include "global.h"
 
 /*
  * Demo for Led:
@@ -26,13 +27,13 @@
 #define LIGHT_ALL 1
 #define SLAKE_ALL 0
 
-extern const unsigned char leds[];
+extern const uint8_t leds[];
 
 /*
  * Demo for Nixie Tube:
- * show_digit(0, 8, 1); //show digit 8 with dot on the first nixie tube
+ * show_digit(0, 8, true); //show digit 8 with dot on the first nixie tube
  */
 
-extern void show_digit(unsigned int nixie_idx, unsigned int digit, int show_dot);
+extern void show_digit(uint8_t nixie_idx, uint8_t digit, uint8_t show_dot);
 
 #endif

@@ -1,21 +1,23 @@
 #ifndef __ARRAY_POOL_H__
 #define __ARRAY_POOL_H__
 
+#include "global.h"
+
 //type must be a typedef name, and data must be the first field
 #define INIT_POOL(name, type, _size) \
 struct pool_##type {\
 	type data;\
-	unsigned char valid;\
-	int pos;\
+	uint8_t valid;\
+	int32_t pos;\
 };\
 struct pool_##type _##name[_size] = {0};\
 struct head_pool_##type {\
 	struct pool_##type *pool;\
-	int size;\
-	int pos;\
+	uint32_t size;\
+	int32_t pos;\
 	type *item_ptr;\
-	int valid_num;\
-	unsigned char op_code;\
+	uint32_t valid_num;\
+	uint8_t op_code;\
 };\
 struct head_pool_##type name = { _##name, _size};
 
@@ -80,9 +82,11 @@ struct head_pool_##type name = { _##name, _size};
 	if ((_pos >=0) && (_pos < pool.size)) {\
 		pool.op_code = 0;\
 		pool.pos = _pos;\
+        if (pool.pool[_pos].valid) {\
+            pool.valid_num--;\
+        }\
 		pool.pool[_pos].valid = 0;\
 		pool.item_ptr = NULL;\
-		pool.valid_num--;\
 	}\
 }
 

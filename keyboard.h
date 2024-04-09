@@ -3,6 +3,7 @@
 
 #include <REGX52.H>
 #include "timer.h"
+#include "global.h"
 
 /*
  * Demo for K1~K4:
@@ -37,6 +38,6 @@
  * }
  */
 
-extern unsigned int check_matrix_keyboard_press();
+extern uint8_t check_matrix_keyboard_press();
 
 #endif

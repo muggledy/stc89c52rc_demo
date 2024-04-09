@@ -1,9 +1,9 @@
 #include "keyboard.h"
 
-unsigned int check_matrix_keyboard_press()
+uint8_t check_matrix_keyboard_press()
 {
-    unsigned int key = 0;
-    const int anti_shake = 20;
+    uint8_t key = 0;
+    const uint8_t anti_shake = 20;
 
     P1 = 0xF7;
     if (0xF7 != P1) {

@@ -1,8 +1,8 @@
 #include "timer.h"
 
-void delay_1ms(unsigned int n)		//@11.0592MHz
+void delay_1ms(uint32_t n)		//@11.0592MHz
 {
-	unsigned char i, j;
+	uint8_t i, j;
 
 	_nop_();
 	while (n) {
@@ -16,9 +16,9 @@ void delay_1ms(unsigned int n)		//@11.0592MHz
 	}
 }
 
-void delay_1000ms(unsigned int n)		//@11.0592MHz
+void delay_1000ms(uint32_t n)		//@11.0592MHz
 {
-	unsigned char i, j, k;
+	uint8_t i, j, k;
 
 	_nop_();
     while (n) {
@@ -36,16 +36,16 @@ void delay_1000ms(unsigned int n)		//@11.0592MHz
     }
 }
 
-unsigned char _TH0 = 0;
-unsigned char _TL0 = 0;
+uint8_t _TH0 = 0;
+uint8_t _TL0 = 0;
 
 /*
  * Init the timer counter(TH0:TL0) to trigger timer interrupt after time_interval(us)
  * Note: timer counter increments by 1 every MICRO_SEC_TIME_PER_COUNT us
  */
 #define INIT_16BIT_TIMER_COUNTER(time_interval) {\
-    unsigned int counter = 0xFFFF - \
-        (unsigned int)((double)time_interval / MICRO_SEC_TIME_PER_COUNT) + 1;\
+    uint32_t counter = 0xFFFF - \
+        (uint32_t)((float32_t)time_interval / MICRO_SEC_TIME_PER_COUNT) + 1;\
     TH0 = _TH0 = counter >> 8;\
     TL0 = _TL0 = counter & 0x00FF;\
 }
@@ -71,18 +71,18 @@ void sys_timer0_init()
     PT0 = 0;
 }
 
-unsigned int timer0_one_second_counts = 1000000 / TIMER0_INTERVAL;
-unsigned int timer0_counter = 0;
-unsigned long sys_timer0_seconds = 0;
+uint32_t timer0_one_second_counts = 1000000 / TIMER0_INTERVAL;
+uint32_t timer0_counter = 0;
+uint32_t sys_timer0_seconds = 0;
 
 /* system running time(s): sys_timer0_seconds + ((TIMER0_INTERVAL * timer0_counter) / 1000000)
  * + ((TH0:TL0 - _TH0:_TL0) * MICRO_SEC_TIME_PER_COUNT / 1000000), the last(3-th) item can 
  * be directly ignored(the deviation is only in TIMER0_INTERVAL us)*/
 void get_system_up_time(time_t *t)
 {
-    unsigned char CUR_TH0 = TH0;
-    unsigned char CUR_TL0 = TL0;
-    unsigned short TH0_DIFF = CUR_TH0 - _TH0;
+    uint8_t CUR_TH0 = TH0;
+    uint8_t CUR_TL0 = TL0;
+    uint16_t TH0_DIFF = CUR_TH0 - _TH0;
     if (NULL == t) {
         return;
     } //Q: we may can't get accurate current system up time, for the timer0(or others) interrupt may 
@@ -92,19 +92,22 @@ void get_system_up_time(time_t *t)
 #ifndef CALC_ACC_MICRO_SEC_TIME
         + 0;
 #else
-        + (unsigned int)(((TH0_DIFF << 8) + (CUR_TL0 - _TL0)) * MICRO_SEC_TIME_PER_COUNT);
+        + (uint32_t)(((TH0_DIFF << 8) + (CUR_TL0 - _TL0)) * MICRO_SEC_TIME_PER_COUNT);
 #endif
 }
 
 void show_sys_up_time_with_lcd()
 {
+#if 0
 	LCD_Init();
     LCD_ShowNum(1, 1, sys_timer0_seconds, 5);
-#if 0
-    time_t t;
-    get_system_up_time(&t);
-    LCD_ShowNum(1, 1, t.seconds, 5);
 #endif
+    time_t t;
+	int i = 0;
+	for (;i<100;i++);
+    get_system_up_time(&t);
+	LCD_Init();
+    LCD_ShowNum(1, 1, t.micro_secs, 5);
 }
 
 /* Scheduled tasks are on the second level, if current due tasks can't be processed in one second, 
