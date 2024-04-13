@@ -1,6 +1,6 @@
 #include "timer.h"
 
-void delay_1ms(uint32_t n)		//@11.0592MHz
+void delay_1ms(uint16_t n)		//@11.0592MHz
 {
 	uint8_t i, j;
 
@@ -16,7 +16,7 @@ void delay_1ms(uint32_t n)		//@11.0592MHz
 	}
 }
 
-void delay_1000ms(uint32_t n)		//@11.0592MHz
+void delay_1000ms(uint16_t n)		//@11.0592MHz
 {
 	uint8_t i, j, k;
 
@@ -96,24 +96,109 @@ void get_system_up_time(time_t *t)
 #endif
 }
 
+void convert_time_t_to_hours(time_t *time, uint16_t *days, uint8_t *hours, 
+	uint8_t *minutes, uint8_t *seconds, uint32_t *micro_secs)
+{
+	uint32_t t;
+	*days = time->seconds / 86400;
+	t = time->seconds % 86400;
+	*hours = t / 3600;
+	t %= 3600;
+	*minutes = t / 60;
+	*seconds = t % 60;
+	*micro_secs = time->micro_secs;
+}
+
+#ifdef SHOW_TIME_WITH_LCD
 void show_sys_up_time_with_lcd()
 {
 #if 0
 	LCD_Init();
     LCD_ShowNum(1, 1, sys_timer0_seconds, 5);
-#endif
-    time_t t;
-	int i = 0;
-	for (;i<100;i++);
-    get_system_up_time(&t);
+#else
+	char _string[29]; //can't defined after micro_secs, why?
+	time_t t;
+	uint16_t days; //need 5 chars to strore
+	uint8_t hours; //need 3 chars to strore
+	uint8_t minutes;
+	uint8_t seconds;
+	uint32_t micro_secs; //need 10 chars to strore
+	INIT_STR5(days_str);
+	INIT_STR3(hours_str);
+	INIT_STR3(minutes_str);
+	INIT_STR3(seconds_str);
+	INIT_STR10(micro_secs_str);
+	get_system_up_time(&t);
+	convert_time_t_to_hours(&t, &days, &hours, &minutes, &seconds, &micro_secs);
+	convert_uint16_to_str(days, &days_str);
+	convert_uint8_to_str(hours, &hours_str);
+	convert_uint8_to_str(minutes, &minutes_str);
+	convert_uint8_to_str(seconds, &seconds_str);
+	convert_uint32_to_str(micro_secs, &micro_secs_str);
+	concate_two_strs(concate_two_strs(concate_two_strs(concate_two_strs(concate_two_strs(
+		concate_two_strs(concate_two_strs(concate_two_strs(
+		days_str, ":", _string), hours_str, _string), ":", _string), minutes_str, _string), ":", _string), 
+		seconds_str, _string), ":", _string), micro_secs_str, _string);
 	LCD_Init();
-    LCD_ShowNum(1, 1, t.micro_secs, 5);
+    LCD_ShowString(1, 1, _string);
+#endif
+}
+#endif
+
+sched_task_t global_task_list[GLOBAL_TASK_LIST_MAX_NUM];
+
+sched_task_t* sched_add(uint16_t interval, void (*func)(void *), void *param)
+{
+	uint8_t i = 0;
+	for (; i<GLOBAL_TASK_LIST_MAX_NUM; i++) {
+		if (TST_FLAG(global_task_list + i, flag, SCHED_TASK_IS_VALID)) {
+			continue;
+		}
+		global_task_list[i].flag = 0;
+		SET_FLAG(global_task_list + i, flag, SCHED_TASK_IS_VALID);
+		global_task_list[i].func = func;
+		global_task_list[i].param = param;
+		global_task_list[i].interval = interval;
+		return global_task_list + i;
+	}
+	return NULL;
+}
+
+void sched_del(sched_task_t *task)
+{
+	if (!task) return;
+	CLR_FLAG(task, flag, SCHED_TASK_IS_VALID);
+	//task->func = NULL;
+	//task->interval = 0; //just for smaller data/xdata/code consume
 }
 
 /* Scheduled tasks are on the second level, if current due tasks can't be processed in one second, 
  * tasks due in the next second will not be processed in time, cause ghost delay */
-void process_due_tasks_with_min_heap()
+void process_due_tasks()
 {
+	uint8_t i;
+	time_t enter_t, cur_t; //initialization assignment consumes code flash space, omit(if you can) is better
+	get_system_up_time(&enter_t);
+	cur_t.seconds = 0;
+	for (i = 0; i<GLOBAL_TASK_LIST_MAX_NUM; i++) {
+		global_task_list[i].interval--;
+		cur_t.seconds += TST_FLAG(global_task_list + i, flag, SCHED_TASK_IS_VALID); //just for a bit faster, maybe
+	}
+	if (!cur_t.seconds) return;
+	for (i = 0; i<GLOBAL_TASK_LIST_MAX_NUM; i++) {
+		if (TST_FLAG(global_task_list + i, flag, SCHED_TASK_IS_VALID) 
+				&& (global_task_list[i].interval <= 0) 
+				&& !TST_FLAG(global_task_list+i, flag, SCHED_TASK_IS_RUNNING)) {
+			SET_FLAG(global_task_list+i, flag, SCHED_TASK_IS_RUNNING); //avoid re-excute task for nested interrupt occurs
+			global_task_list[i].func(global_task_list[i].param);
+			sched_del(global_task_list+i);
+			get_system_up_time(&cur_t);
+			if ((cur_t.seconds > enter_t.seconds) || 
+					((cur_t.micro_secs - enter_t.micro_secs) >= TASK_MAX_EXECUTE_TIME_IN_ONE_INTERRUPT)) {
+				return;
+			}
+		}
+	}
     return;
 }
 
@@ -152,6 +237,6 @@ void Timer0_Routine() interrupt 1
         show_sys_up_time_with_lcd();
 #endif
         //the time-consuming operations are as follows
-        process_due_tasks_with_min_heap();
+        process_due_tasks();
     }
 }

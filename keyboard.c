@@ -3,11 +3,10 @@
 uint8_t check_matrix_keyboard_press()
 {
     uint8_t key = 0;
-    const uint8_t anti_shake = 20;
 
     P1 = 0xF7;
     if (0xF7 != P1) {
-        delay_1ms(anti_shake);
+        delay_1ms(ANTI_SHAKE_MS);
         switch (P1) {
             case 0x77: key = 1; break;
             case 0xB7: key = 5; break;
@@ -19,7 +18,7 @@ uint8_t check_matrix_keyboard_press()
     
     P1 = 0xFB;
     if (0xFB != P1) {
-        delay_1ms(anti_shake);
+        delay_1ms(ANTI_SHAKE_MS);
         switch (P1) {
             case 0x7B: key = 2; break;
             case 0xBB: key = 6; break;
@@ -31,7 +30,7 @@ uint8_t check_matrix_keyboard_press()
     
     P1 = 0xFD;
     if (0xFD != P1) {
-        delay_1ms(anti_shake);
+        delay_1ms(ANTI_SHAKE_MS);
         switch (P1) {
             case 0x7D: key = 3; break;
             case 0xBD: key = 7; break;
@@ -43,7 +42,7 @@ uint8_t check_matrix_keyboard_press()
     
     P1 = 0xFE;
     if (0xFE != P1) {
-        delay_1ms(anti_shake);
+        delay_1ms(ANTI_SHAKE_MS);
         switch (P1) {
             case 0x7E: key = 4; break;
             case 0xBE: key = 8; break;

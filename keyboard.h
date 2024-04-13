@@ -38,6 +38,7 @@
  * }
  */
 
+#define ANTI_SHAKE_MS 20
 extern uint8_t check_matrix_keyboard_press();
 
 #endif

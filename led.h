@@ -34,6 +34,6 @@ extern const uint8_t leds[];
  * show_digit(0, 8, true); //show digit 8 with dot on the first nixie tube
  */
 
-extern void show_digit(uint8_t nixie_idx, uint8_t digit, uint8_t show_dot);
+extern void show_digit(uint8_t nixie_idx, uint8_t digit, bool_t show_dot);
 
 #endif
