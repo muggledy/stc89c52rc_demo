@@ -114,7 +114,7 @@ void show_sys_up_time_with_lcd()
 {
 #if 0
 	LCD_Init();
-    LCD_ShowNum(1, 1, sys_timer0_seconds, 5);
+	LCD_ShowNum(1, 1, sys_timer0_seconds, 5);
 #else
 	char _string[29]; //can't defined after micro_secs, why?
 	time_t t;
@@ -140,7 +140,7 @@ void show_sys_up_time_with_lcd()
 		days_str, ":", _string), hours_str, _string), ":", _string), minutes_str, _string), ":", _string), 
 		seconds_str, _string), ":", _string), micro_secs_str, _string);
 	LCD_Init();
-    LCD_ShowString(1, 1, _string);
+	LCD_ShowString(1, 1, _string);
 #endif
 }
 #endif
@@ -170,6 +170,14 @@ void sched_del(sched_task_t *task)
 	CLR_FLAG(task, flag, SCHED_TASK_IS_VALID);
 	//task->func = NULL;
 	//task->interval = 0; //just for smaller data/xdata/code consume
+}
+
+void init_sched_task_list()
+{
+	uint8_t i = 0;
+	for (; i<GLOBAL_TASK_LIST_MAX_NUM; i++) {
+		CLR_FLAG(global_task_list+i, flag, SCHED_TASK_IS_VALID);
+	}
 }
 
 /* Scheduled tasks are on the second level, if current due tasks can't be processed in one second, 

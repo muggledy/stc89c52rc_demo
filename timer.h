@@ -42,9 +42,8 @@ typedef struct sched_task_ {
 	uint16_t interval; //seconds
 } sched_task_t;
 
-extern sched_task_t global_task_list[];
-
 extern sched_task_t* sched_add(uint16_t interval, void (*func)(void *), void *param);
 extern void sched_del(sched_task_t *task);
+extern void init_sched_task_list();
 
 #endif
