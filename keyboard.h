@@ -28,6 +28,8 @@
     delay_1ms(20);\
 }
 
+extern uint8_t get_key();
+
 /*
  * Demo for Matrix Keyboard(S1~S16):
  * while(1) {

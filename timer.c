@@ -36,6 +36,19 @@ void delay_1000ms(uint16_t n)		//@11.0592MHz
     }
 }
 
+#if 1
+void delay_10us(uint16_t n)		//@11.0592MHz
+{
+	unsigned char i;
+
+	while (n) {
+		i = 2;
+		while (--i);
+		n--;
+	}
+}
+#endif
+
 uint8_t _TH0 = 0;
 uint8_t _TL0 = 0;
 
@@ -167,7 +180,7 @@ sched_task_t* sched_add(uint16_t interval, void (*func)(void *), void *param)
 void sched_del(sched_task_t *task)
 {
 	if (!task) return;
-	CLR_FLAG(task, flag, SCHED_TASK_IS_VALID);
+	task->flag = 0; //include. CLR_FLAG(task, flag, SCHED_TASK_IS_VALID);
 	//task->func = NULL;
 	//task->interval = 0; //just for smaller data/xdata/code consume
 }
@@ -194,10 +207,12 @@ void process_due_tasks()
 	}
 	if (!cur_t.seconds) return;
 	for (i = 0; i<GLOBAL_TASK_LIST_MAX_NUM; i++) {
+		ET0 = 0; //disable (timer0) interrupt
 		if (TST_FLAG(global_task_list + i, flag, SCHED_TASK_IS_VALID) 
 				&& (global_task_list[i].interval <= 0) 
 				&& !TST_FLAG(global_task_list+i, flag, SCHED_TASK_IS_RUNNING)) {
 			SET_FLAG(global_task_list+i, flag, SCHED_TASK_IS_RUNNING); //avoid re-excute task for nested interrupt occurs
+			ET0 = 1; //enable interrupt
 			global_task_list[i].func(global_task_list[i].param);
 			sched_del(global_task_list+i);
 			get_system_up_time(&cur_t);
@@ -206,9 +221,40 @@ void process_due_tasks()
 				return;
 			}
 		}
+		ET0 = 1;
 	}
     return;
 }
+
+#ifdef SHOW_DS1302_RTC_WITH_LCD
+uint8_t ds1302_rtc_mode = DS1302_RTC_SHOW;
+uint8_t ds1302_rtc_setwhich = 0; //0:set year, 1:set month, 2:set day, 3:set hour, 4:set minute, 5:set second
+uint8_t ds1302_rtc_flash = 0; //0:show null, 1:show num
+
+void show_ds1302_rtc_with_lcd(bit read_from_ds1302_flag) //inparam 0: read from ds1302_datetime
+{
+	if (read_from_ds1302_flag) ds1302_read_time();
+	LCD_ShowNum(1, 1, ds1302_datetime.year, 2);
+	LCD_ShowNum(1, 4, ds1302_datetime.month, 2);
+	LCD_ShowNum(1, 7, ds1302_datetime.day, 2);
+	LCD_ShowNum(2, 1, ds1302_datetime.hour, 2);
+	LCD_ShowNum(2, 4, ds1302_datetime.minute, 2);
+	LCD_ShowNum(2, 7, ds1302_datetime.second, 2);
+}
+
+uint8_t get_days_num(uint8_t year, uint8_t month)
+{
+	if ((1==month) || (3==month) || (5==month) || (7==month) || (8==month) || (10==month) || (12==month)) {
+		return 31;
+	} else if ((4==month) || (6==month) || (9==month) || (11==month)) {
+		return 30;
+	} else if ((0==year%4) && ((0!=year%100) || (0==year%400))) {
+		return 29;
+	} else {
+		return 28;
+	}
+}
+#endif
 
 /*
  * Interrupt handler for Timer0, triggers 
@@ -241,8 +287,16 @@ void Timer0_Routine() interrupt 1
         if (0 == sys_timer0_seconds) { //sys_timer0_seconds overflow occurs
             /*handle exception*/
         }
-#ifdef SHOW_TIME_WITH_LCD
+#if defined(SHOW_TIME_WITH_LCD)
         show_sys_up_time_with_lcd();
+#elif defined(SHOW_DS1302_RTC_WITH_LCD)
+		SHOW_RTC_SEPARATOR(); //remedy
+		if (DS1302_RTC_SHOW == ds1302_rtc_mode) {
+			show_ds1302_rtc_with_lcd(1);
+		} else if (DS1302_RTC_EDIT == ds1302_rtc_mode) {
+			SHOW_FLASH_RTC_WHEN_EDIT();
+			ds1302_rtc_flash = !ds1302_rtc_flash;
+		}
 #endif
         //the time-consuming operations are as follows
         process_due_tasks();

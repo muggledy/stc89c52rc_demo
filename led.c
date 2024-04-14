@@ -55,3 +55,62 @@ void show_digit(uint8_t nixie_idx, uint8_t digit, bool_t show_dot)
 		(6 == digit ? N6 : (7 == digit ? N7 : (8 == digit ? N8 : N9))))))))); //Program Size: data=9.0 xdata=152 code=4525
 #endif
 }
+
+/*
+ * LED Dot Matrix Screen
+ */
+
+void write_byte_into_74hc595(uint8_t byte)
+{
+	uint8_t i = 0;
+	for (i=0; i<8; i++) {
+		SER = byte & (0x80 >> i); //assign non-zero to SER, e.q., SER=1
+		SCK = 1; //shift
+		//delay_10us(1); //no need for STC89C52RC
+		SCK = 0;
+	}
+	RCK = 1; //output in-param byte(8 bit) to pin QA~QH(low bit -> hign bit)
+	//delay_10us(1); //no need for STC89C52RC
+	RCK = 0;
+}
+
+#if 0
+void show_matrix_led_column(uint8_t column, uint8_t rows_mask)
+{
+	P0 = 0xFF; //eliminate jitter
+	column = (column-1) % 8;
+	write_byte_into_74hc595(rows_mask);
+	P0 = ~(0x80 >> column);
+}
+#endif
+
+void show_matrix_led_with_location(uint8_t rows_mask, uint8_t columns_mask)
+{
+	P0 = 0xFF; //eliminate jitter
+	write_byte_into_74hc595(rows_mask);
+	P0 = ~columns_mask;
+}
+
+#ifdef SHOW_ANIMATE_LED_HELLO
+void show_animate_hello_with_led_dot_matrix()
+{
+	uint8_t code animation[39] = {
+		0x00,0x00,0x00,0x00,0x00,
+		0xFF,0x08,0x08,0x08,0xFF,0x00,0x1E,0x25,0x25,0x25,0x18,0x00,0x7E,0x01,0x02,0x00,
+		0x7E,0x01,0x02,0x00,0x0E,0x11,0x11,0x11,0x0E,0x00,0x7D,
+		0x00,0x00,0x00,0x00,0x00,0xFF,0x08}; //use code declaration to store the array in flash(Note: read only), rather than RAM
+	uint8_t i = 0, offset = 0, count = 0;
+	
+	while(1) {
+		for (i=0; i<8; i++) { //show one frame
+			show_matrix_led_with_location(animation[offset+i], 0x80 >> i);
+			delay_10us(80);
+		}
+		if (count++ > 8) { //one frame repeat show 8 times
+			count = 0;
+			offset++;
+			offset %= (39-7);
+		}
+	}
+}
+#endif

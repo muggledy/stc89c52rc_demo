@@ -3,14 +3,14 @@
 
 #include "global.h"
 
-#define STR3_LEN 4
-#define STR5_LEN 6
+#define STR3_LEN  4
+#define STR5_LEN  6
 #define STR10_LEN 11
 typedef char (*str3)[STR3_LEN]; 
 typedef char (*str5)[STR5_LEN]; 
 typedef char (*str10)[STR10_LEN]; 
-#define INIT_STR3(variable) char variable[STR3_LEN]
-#define INIT_STR5(variable) char variable[STR5_LEN]
+#define INIT_STR3(variable)  char variable[STR3_LEN]
+#define INIT_STR5(variable)  char variable[STR5_LEN]
 #define INIT_STR10(variable) char variable[STR10_LEN]
 
 extern uint8_t strlen(char *str);

@@ -55,14 +55,12 @@ void convert_uint32_to_str(uint32_t n, str10 s)
 
 char* concate_two_strs(char *str1, char *str2, char *dst)
 {
-	char *src_ptr = str1;
 	char *dst_ptr = dst;
-	while(0 != *src_ptr) {
-		*(dst_ptr++) = *(src_ptr++);
+	while(0 != *str1) {
+		*(dst_ptr++) = *(str1++);
 	}
-	src_ptr = str2;
-	while(0 != *src_ptr) {
-		*(dst_ptr++) = *(src_ptr++);
+	while(0 != *str2) {
+		*(dst_ptr++) = *(str2++);
 	}
     *dst_ptr = 0;
 	return dst;

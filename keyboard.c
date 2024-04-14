@@ -1,5 +1,23 @@
 #include "keyboard.h"
 
+uint8_t get_key()
+{
+    if CHECK_PRESS(KEY1) {
+        ANTI_SHAKE(KEY1);
+        return 1;
+    } else if CHECK_PRESS(KEY2) {
+        ANTI_SHAKE(KEY2);
+        return 2;
+    } else if CHECK_PRESS(KEY3) {
+        ANTI_SHAKE(KEY3);
+        return 3;
+    } else if CHECK_PRESS(KEY4) {
+        ANTI_SHAKE(KEY4);
+        return 4;
+    }
+	return 0;
+}
+
 uint8_t check_matrix_keyboard_press()
 {
     uint8_t key = 0;

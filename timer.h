@@ -6,8 +6,18 @@
 #include "global.h"
 #include "string.h"
 
+#if defined(SHOW_TIME_WITH_LCD)
+#include "LCD1602.h"
+#elif defined(SHOW_DS1302_RTC_WITH_LCD)
+#include "LCD1602.h"
+#include "DS1302.h"
+#endif
+
 extern void delay_1ms(uint16_t repeat);
 extern void delay_1000ms(uint16_t repeat);
+#if 1
+extern void delay_10us(uint16_t n);
+#endif
 
 #define TIMER0_INTERVAL 50000 //unit: us, valid range(@11.0592MHz): [2, 71112] 
 //which makes "0xFFFF - (unsigned int)((double)TIMER0_INTERVAL / MICRO_SEC_TIME_PER_COUNT) + 1" be in range of [65535, 0], 
@@ -17,9 +27,6 @@ extern void delay_1000ms(uint16_t repeat);
 #define MICRO_SEC_TIME_PER_COUNT 1.0850694444444442 //@11.0592MHz
 
 #define CALC_ACC_MICRO_SEC_TIME //for get_system_up_time()
-#ifdef SHOW_WITH_LCD
-#define SHOW_TIME_WITH_LCD
-#endif
 
 typedef struct time_ {
     uint32_t seconds; //can record approximate 135 years
@@ -42,8 +49,48 @@ typedef struct sched_task_ {
 	uint16_t interval; //seconds
 } sched_task_t;
 
+extern void init_sched_task_list();
 extern sched_task_t* sched_add(uint16_t interval, void (*func)(void *), void *param);
 extern void sched_del(sched_task_t *task);
-extern void init_sched_task_list();
+
+#define MOD_ADD1(num, mod) ((1+(num)) % (mod))
+#define MOD_DEC1(num, mod) (((mod)+(num)-1) % (mod)) //only used for clock time
+
+#ifdef SHOW_DS1302_RTC_WITH_LCD
+#define DS1302_RTC_SHOW 0
+#define DS1302_RTC_EDIT 1
+extern uint8_t ds1302_rtc_mode;
+extern uint8_t ds1302_rtc_setwhich;
+extern uint8_t ds1302_rtc_flash;
+extern void show_ds1302_rtc_with_lcd(bit read_from_ds1302_flag);
+extern uint8_t get_days_num(uint8_t year, uint8_t month);
+#define SHOW_FLASH_RTC_WHEN_EDIT() {\
+	if (0 == ds1302_rtc_setwhich) {\
+		if (!ds1302_rtc_flash) LCD_ShowString(1, 1, "  ");\
+		else LCD_ShowNum(1, 1, ds1302_datetime.year, 2);\
+	} else if (1 == ds1302_rtc_setwhich) {\
+		if (!ds1302_rtc_flash) LCD_ShowString(1, 4, "  ");\
+		else LCD_ShowNum(1, 4, ds1302_datetime.month, 2);\
+	} else if (2 == ds1302_rtc_setwhich) {\
+		if (!ds1302_rtc_flash) LCD_ShowString(1, 7, "  ");\
+		else LCD_ShowNum(1, 7, ds1302_datetime.day, 2);\
+	} else if (3 == ds1302_rtc_setwhich) {\
+		if (!ds1302_rtc_flash) LCD_ShowString(2, 1, "  ");\
+		else LCD_ShowNum(2, 1, ds1302_datetime.hour, 2);\
+	} else if (4 == ds1302_rtc_setwhich) {\
+		if (!ds1302_rtc_flash) LCD_ShowString(2, 4, "  ");\
+		else LCD_ShowNum(2, 4, ds1302_datetime.minute, 2);\
+	} else if (5 == ds1302_rtc_setwhich) {\
+		if (!ds1302_rtc_flash) LCD_ShowString(2, 7, "  ");\
+		else LCD_ShowNum(2, 7, ds1302_datetime.second, 2);\
+	}\
+}
+#define SHOW_RTC_SEPARATOR() {\
+	LCD_ShowString(1, 3, "-");\
+	LCD_ShowString(1, 6, "-");\
+	LCD_ShowString(2, 3, ":");\
+	LCD_ShowString(2, 6, ":");\
+}
+#endif
 
 #endif
