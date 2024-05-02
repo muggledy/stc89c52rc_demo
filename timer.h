@@ -22,9 +22,9 @@ extern void delay_10us(uint16_t n);
 #define TIMER0_INTERVAL 50000 //unit: us, valid range(@11.0592MHz): [2, 71112] 
 //which makes "0xFFFF - (unsigned int)((double)TIMER0_INTERVAL / MICRO_SEC_TIME_PER_COUNT) + 1" be in range of [65535, 0], 
 //[65535, 0] is 16bit timer counter(TH0:TL0)'s valid range, the left boundary value means minimum time interruption(1.0850694444444442 us), 
-//the right means maximum. note: considering the weak performance of the MCU(e.g., "for (;i<100;i++);" consumes 871 us), 
-//TIMER0_INTERVAL should not be too small
-#define MICRO_SEC_TIME_PER_COUNT 1.0850694444444442 //@11.0592MHz
+//the right means maximum(1.0850694444444442*65536 us).
+//note: considering the weak performance of the MCU(e.g., "for (;i<100;i++);" consumes 871 us), TIMER0_INTERVAL should not be too small
+#define MICRO_SEC_TIME_PER_COUNT 1.0850694444444442 //@11.0592MHz 1000000us/(11.0592*10**6/12Hz)
 
 #define CALC_ACC_MICRO_SEC_TIME //for get_system_up_time()
 

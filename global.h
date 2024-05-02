@@ -10,7 +10,7 @@ SHOW_ANIMATE_LED_HELLO and others are mutually exclusive*/
 
 #ifdef SHOW_WITH_LCD /*SHOW_TIME_WITH_LCD and RTC_READ_WRITE_SHOW are mutually exclusive*/
 //#define SHOW_TIME_WITH_LCD //show stopwatch
-#define SHOW_DS1302_RTC_WITH_LCD //show RTC(Real Time Clock)
+//#define SHOW_DS1302_RTC_WITH_LCD //show RTC(Real Time Clock)
 #endif
 
 #define NULL  0

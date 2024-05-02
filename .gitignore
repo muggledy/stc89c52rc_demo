@@ -1,3 +1,4 @@
-Listings/
-Objects/
-proj.uvproj
+/Listings/*
+!/Listings/.gitkeep
+/Objects/*
+!/Objects/.gitkeep
