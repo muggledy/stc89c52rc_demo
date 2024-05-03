@@ -33,9 +33,30 @@ extern void sys_timer0_init();
     TL0 = 255;\
 }
 
-#define SET_16BIT_TIMER_COUNTER(counter) {\
+#define SET_16BIT_TIMER0_COUNTER(counter) {\
     TH0 = (counter) >> 8;\
     TL0 = (counter) & 0x00FF;\
+}
+
+#define TIMER1_INTERVAL 71112
+
+extern void sys_timer1_init();
+
+extern uint8_t _TH1;
+extern uint8_t _TL1;
+extern uint32_t timer1_one_second_counts;
+extern uint32_t timer1_counter;
+
+#define RESET_16BIT_TIMER1_COUNTER() {\
+    TH1 = _TH1;\
+    TL1 = _TL1;\
+}
+
+#define OPEN_TIMER1() {\
+    TR1 = 1;\
+}
+#define CLOSE_TIMER1() {\
+    TR1 = 0;\
 }
 
 #endif

@@ -1,6 +1,7 @@
 #include "global.h"
 #include "timer.h"
 #include <REGX52.H>
+#include "LCD1602.h"
 
 #define BUZZER P2_5
 
@@ -244,6 +245,7 @@ uint16_t music_tbl_cursor = 0;
 void main()
 {
     sys_timer0_init(); //init TH0 and TL0 herein should be small, 0 is also ok
+    //sys_timer1_init();
 
     while(1) {
         if (0xFF != music_tbl[music_tbl_cursor]) {
@@ -265,6 +267,24 @@ void Timer0_Routine() interrupt 1
 {
     if (0 == note_freq_tbl[music_tbl[music_tbl_cursor]]) return;
 
-    SET_16BIT_TIMER_COUNTER(note_freq_tbl[music_tbl[music_tbl_cursor]]);
+    SET_16BIT_TIMER0_COUNTER(note_freq_tbl[music_tbl[music_tbl_cursor]]);
     BUZZER = !BUZZER; //向蜂鸣器发出振动信号,且每次信号翻转,即010101...
+}
+
+uint32_t seconds = 0;
+
+void Timer1_Routine() interrupt 3
+{
+    RESET_16BIT_TIMER1_COUNTER();
+    timer1_counter++;
+    if (timer1_counter >= timer1_one_second_counts) {
+        timer1_counter = 0;
+        //原本想在这里通过LCD_ShowString()显示当前音符的音调高低,但实测行不通,单片机性能太低了,此处每隔1s显示一下都不行,
+        //尤其是我设置了Timer0中断优先级高于Timer1后,LCD直接显示异常了,因为LCD显示比较耗时,正在显示呢,结果Timer0中断不停来到,
+        //打断了LCD显示,因为高优先级先去处理Timer0了,如果Timer0,Timer1优先级设为相同,声音又会抖动丢失(本来2ms后要走Timer0
+        //发声的,结果1ms后Timer1溢出中断了花了好长时间进行LCD显示,于是2ms后无法按预期发声),无解...
+        seconds++;
+        LCD_Init();
+        LCD_ShowNum(1, 1, seconds, 5);
+    }
 }
