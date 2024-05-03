@@ -39,6 +39,40 @@ extern const uint8_t leds[];
 
 extern void show_digit(uint8_t nixie_idx, uint8_t digit, bool_t show_dot);
 
+#ifdef TIMER_BASED_NIXIE_SHOW
+extern uint8_t nixie_8_decimal[];
+#define NIXIE_NULL 10
+#define NIXIE_EOL  11
+#define DIGIT_WITH_DOT(x)    ((x) | 0x80) //valid x:0~9
+#define IS_DIGIT_WITH_DOT(x) ((x) & 0x80)
+#define DIGIT_WITHOUT_DOT(x) ((x) & (~0x80))
+#define init_8_digit_decimal() {\
+    nixie_8_decimal[0] = NIXIE_EOL;\
+}
+/*
+ * Demo: show_8_digit_decimal(2,DIGIT_WITH_DOT(5),DIGIT_WITH_DOT(0),NIXIE_NULL,6,NIXIE_EOL,7,NIXIE_NULL);
+ * this will display:"25.0. 6   ". Note: displayed by timer0 interrupt
+ */
+#if 0
+extern void show_8_digit_decimal(uint8_t n7, n6, n5, n4, n3, n2, n1, n0, dot_idx);
+#else
+#define show_8_digit_decimal(n7, n6, n5, n4, n3, n2, n1, n0) {\
+    nixie_8_decimal[0] = n7;\
+    nixie_8_decimal[1] = n6;\
+    nixie_8_decimal[2] = n5;\
+    nixie_8_decimal[3] = n4;\
+    nixie_8_decimal[4] = n3;\
+    nixie_8_decimal[5] = n2;\
+    nixie_8_decimal[6] = n1;\
+    nixie_8_decimal[7] = n0;\
+}
+#endif
+/*after calling clear_8_digit_decimal(), the timer0 interrupt won't control nixie leds*/
+#define clear_8_digit_decimal() {\
+    nixie_8_decimal[0] = NIXIE_EOL;\
+}
+#endif
+
 /*
  * Demo for LED Dot Matrix Screen(remember to remove J24 pin cap):
  *         (P07)(P06)  (P00)

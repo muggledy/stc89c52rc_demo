@@ -9,10 +9,10 @@
  * Demo for K1~K4:
  * if CHECK_PRESS(KEY1) {
  *     ANTI_SHAKE(KEY1);
- *     LCD_ShowString(1, 1, "Hi, ChenXinYi");
+ *     LCD_ShowString(1, 1, "Hi, ZhangJing");
  * } else if CHECK_PRESS(KEY2) {
  *     ANTI_SHAKE(KEY2);
- *     LCD_ShowString(1, 1, "Hi, ZhangJing");
+ *     LCD_ShowString(1, 1, "Hi, Celestezj");
  * } else if ...
  */
 
@@ -29,6 +29,14 @@
 }
 
 extern uint8_t get_key();
+#ifdef TIMER_BASED_KEY_SCAN
+extern uint8_t which_key_is_pressed;
+#if 0
+extern uint8_t get_cur_key_state();
+#else
+#define get_cur_key_state() (CHECK_PRESS(KEY1) ? 1 : (CHECK_PRESS(KEY2) ? 2 : (CHECK_PRESS(KEY3) ? 3 : (CHECK_PRESS(KEY4) ? 4 : 0))))
+#endif
+#endif
 
 /*
  * Demo for Matrix Keyboard(S1~S16):

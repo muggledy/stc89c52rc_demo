@@ -47,7 +47,7 @@ void led_blink_handler(void *param)
 #endif
 
 void main()
-{
+{    
 #ifdef SHOW_DS1302_RTC_WITH_LCD
     uint8_t key_num = 0;
 #define UPDATE_RTC_DAY() {\

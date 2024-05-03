@@ -56,6 +56,24 @@ void show_digit(uint8_t nixie_idx, uint8_t digit, bool_t show_dot)
 #endif
 }
 
+#ifdef TIMER_BASED_NIXIE_SHOW
+uint8_t nixie_8_decimal[8]; /*7-nixie, 6-nixie, 5-nixie, 4-nixie, 3-nixie, 2-nixie, 1-nixie, 0-nixie*/
+
+#if 0
+void show_8_digit_decimal(uint8_t n7, n6, n5, n4, n3, n2, n1, n0)
+{
+    nixie_8_decimal[0] = n7;
+    nixie_8_decimal[1] = n6;
+    nixie_8_decimal[2] = n5;
+    nixie_8_decimal[3] = n4;
+    nixie_8_decimal[4] = n3;
+    nixie_8_decimal[5] = n2;
+    nixie_8_decimal[6] = n1;
+    nixie_8_decimal[7] = n0;
+}
+#endif
+#endif
+
 /*
  * LED Dot Matrix Screen
  */

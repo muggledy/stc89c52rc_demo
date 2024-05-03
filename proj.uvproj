@@ -408,6 +408,16 @@
               <FileType>1</FileType>
               <FilePath>.\DS1302.c</FilePath>
             </File>
+            <File>
+              <FileName>AT24C02.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\AT24C02.c</FilePath>
+            </File>
+            <File>
+              <FileName>I2C.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\I2C.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

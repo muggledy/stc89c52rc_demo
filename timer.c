@@ -87,6 +87,10 @@ void sys_timer0_init()
 uint32_t timer0_one_second_counts = 1000000 / TIMER0_INTERVAL;
 uint32_t timer0_counter = 0;
 uint32_t sys_timer0_seconds = 0;
+#ifdef TIMER_BASED_KEY_SCAN
+uint8_t timer0_20ms_counts = 20000 / TIMER0_INTERVAL;
+uint8_t timer0_key_detect_counter = 0;
+#endif
 
 /* system running time(s): sys_timer0_seconds + ((TIMER0_INTERVAL * timer0_counter) / 1000000)
  * + ((TH0:TL0 - _TH0:_TL0) * MICRO_SEC_TIME_PER_COUNT / 1000000), the last(3-th) item can 
@@ -256,6 +260,22 @@ uint8_t get_days_num(uint8_t year, uint8_t month)
 }
 #endif
 
+#ifdef TIMER_BASED_KEY_SCAN
+#define DETECT_WHICH_KEY_IS_PRESSED() {\
+    if ((0 != key_state_last) && (0 == key_state_now)) {\
+        if ((1 == key_state_last) && (0 == key_state_now)) {\
+            which_key_is_pressed = 1;\
+        } else if ((2 == key_state_last) && (0 == key_state_now)) {\
+            which_key_is_pressed = 2;\
+        } else if ((3 == key_state_last) && (0 == key_state_now)) {\
+            which_key_is_pressed = 3;\
+        } else if ((4 == key_state_last) && (0 == key_state_now)) {\
+            which_key_is_pressed = 4;\
+        }\
+    }\
+}
+#endif
+
 /*
  * Interrupt handler for Timer0, triggers 
  * every TIMER0_INTERVAL us
@@ -279,8 +299,36 @@ uint8_t get_days_num(uint8_t year, uint8_t month)
  */
 void Timer0_Routine() interrupt 1
 {
+#ifdef TIMER_BASED_KEY_SCAN
+    static uint8_t key_state_last = 0, key_state_now = 0;
+#ifdef TIMER_BASED_NIXIE_SHOW
+    static uint8_t nixie_8_decimal_cursor = 0;
+    uint8_t cur_nixie_val = 0;
+#endif
+#endif
     RESET_16BIT_TIMER_COUNTER();
     timer0_counter++;
+#ifdef TIMER_BASED_KEY_SCAN
+    timer0_key_detect_counter++;
+    if (timer0_key_detect_counter >= timer0_20ms_counts) {
+        timer0_key_detect_counter = 0;
+        key_state_now = get_cur_key_state();
+        DETECT_WHICH_KEY_IS_PRESSED();
+        key_state_last = key_state_now;
+    }
+#ifdef TIMER_BASED_NIXIE_SHOW
+    cur_nixie_val = nixie_8_decimal[nixie_8_decimal_cursor];
+    if (NIXIE_EOL != cur_nixie_val) {
+        if (NIXIE_NULL != cur_nixie_val) {
+            show_digit(7-nixie_8_decimal_cursor, DIGIT_WITHOUT_DOT(cur_nixie_val), 
+                IS_DIGIT_WITH_DOT(cur_nixie_val));
+        }
+        nixie_8_decimal_cursor = MOD_ADD1(nixie_8_decimal_cursor, 8);
+    } else {
+        nixie_8_decimal_cursor = 0;
+    }
+#endif
+#endif
     if (timer0_counter >= timer0_one_second_counts) {
         timer0_counter = 0;
         sys_timer0_seconds++;

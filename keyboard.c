@@ -1,5 +1,31 @@
 #include "keyboard.h"
 
+#ifdef TIMER_BASED_KEY_SCAN
+uint8_t which_key_is_pressed = 0; //set by timer0 interrupt
+
+uint8_t get_key()
+{
+    uint8_t tmp = which_key_is_pressed;
+    which_key_is_pressed = 0;
+    return tmp;
+}
+
+#if 0
+uint8_t get_cur_key_state()
+{
+    if CHECK_PRESS(KEY1) {
+        return 1;
+    } else if CHECK_PRESS(KEY2) {
+        return 2;
+    } else if CHECK_PRESS(KEY3) {
+        return 3;
+    } else if CHECK_PRESS(KEY4) {
+        return 4;
+    }
+    return 0;
+}
+#endif
+#else
 uint8_t get_key()
 {
     if CHECK_PRESS(KEY1) {
@@ -17,6 +43,7 @@ uint8_t get_key()
     }
 	return 0;
 }
+#endif
 
 uint8_t check_matrix_keyboard_press()
 {
